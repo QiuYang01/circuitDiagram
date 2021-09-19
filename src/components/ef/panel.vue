@@ -13,7 +13,7 @@
                     <el-button type="text" icon="el-icon-plus" size="large" @click="zoomAdd"></el-button>
                     <el-divider direction="vertical"></el-divider>
                     <el-button type="text" icon="el-icon-minus" size="large" @click="zoomSub"></el-button> -->
-                    <el-button @click="show17chart()">测试查看信号发生器</el-button>
+                    <el-button @click="showchart()">测试查看信号发生器</el-button>
                 </div>
             </el-col>
         </el-row>
@@ -56,7 +56,7 @@
         <flow-info v-if="flowInfoVisible" ref="flowInfo" :data="data"></flow-info>
         <flow-help v-if="flowHelpVisible" ref="flowHelp"></flow-help>
         <!-- 显示结果 -->
-        <echart ref="echart17" :node17data="node17data"></echart>
+        <echart ref="echart17" :tempechartdata="tempechartdata" :echarttitle="data.nodeList[selectIndexByUid(activeElement.nodeId)]"></echart>
     </div>
 
 </template>
@@ -75,12 +75,12 @@
     import lodash from 'lodash'
     import { getDataB } from '../../assets/js/data_B'
     import echart from './echart'
-    import calc from "./calc"
+    import calcutil  from "./calc"
 
     export default {
         data() {
             return {
-                node17data:{}, //绘制信号发生器曲线的数据
+                tempechartdata:{}, //绘制信号发生器曲线的数据
                 // jsPlumb 实例
                 jsPlumb: null,
                 // 控制画布销毁
@@ -92,7 +92,7 @@
                 flowHelpVisible: false,
                 // 数据
                 data: {
-                   
+                   nodeList:[],
                 },
                 // 激活的元素、可能是节点、可能是连线
                 activeElement: {
@@ -161,8 +161,8 @@
                 // 默认加载流程A的数据、在这里可以根据具体的业务返回符合流程数据格式的数据即可
                 this.dataReload(getDataB())
             })
-            console.log("计算",calc.getSinData(1,1))
-            this.$refs.echart17.changedialogVisible(calc.getSinData(1,1));
+            // console.log("计算",calcutil.getSinData(1,1))
+            // this.tempechartdata = calcutil.getSinData(1,1)
         },
         methods: {
             
@@ -233,13 +233,16 @@
 
                     // 连线  https://wdd.js.org/jsplumb-chinese-tutorial/#/?id=_61-g6-antv
                     this.jsPlumb.bind("beforeDrop", (evt) => {
+                        
                         if(window.event.target.nodeName.toLowerCase()=='img'){
                             console.log("连线无效")
                             return
                         }
+
+                        
                         // console.log("结束点的位置",window.event,evt) //.style.left.split('px')[0]
                         //https://blog.csdn.net/zeping891103/article/details/72627855
-                        console.log(window.event.toElement.nodeName)
+                        // console.log(window.event.toElement.nodeName)
                         // alert(window.event.clientY-42)
                         // alert(document.getElementById(evt.targetId).offsetTop)
                         // console.log(document.getElementById(evt.targetId).offsetLeft)
@@ -261,6 +264,14 @@
                             this.$message.error('不支持两个模型之间连线回环');
                             return false
                         }
+
+                        //检查是不是目标点连接了U1 只能U1连接U0
+                        // console.log("anchorsEndX",this.anchorsEnd[4])
+                        if(this.anchorsEnd[4]>60){
+                            this.$message.error('只能链接到U1')
+                            return 
+                        }
+
 
                         var connParam = {
                             source: evt.sourceId,
@@ -453,6 +464,7 @@
                     left: left + 'px',
                     top: top + 'px',
                     dragdotlen:nodeMenu.dragdotlen, //课拖拽点的个数
+                    echart:nodeMenu.echart, //数据
                     dragdotclass: nodeMenu.dragdotclass,
                     imgUrl:nodeMenu.imgUrl,
                     style:nodeMenu.style,
@@ -504,29 +516,7 @@
                 })
                 return true
             },
-            //计算每个模型的输入输出
-            calc(data,node){
-                console.log("进入calc",data,node);
-                var node17 = this.selectNode17uId(data.nodeList); //返回信号发生器的id
-                console.log(node17)
-                if(node17== -1){ //没有信号发生器就退出 不计算
-                    console.log("没有信号发生器");
-                    return
-                }
-                if(node17.dataarr[0].value==null){
-                    this.$message.warning("请先设定信号发生器电压");
-                    return
-                }
-                var from = node17.id;
-                var to = this.selectNodeFromLineListByfrom(data.lineList,from)
-                while(to!=-1){ //根据连线顺序 遍历所有的模型的id 然后改变模型的U
-                    console.log(`${from}--->${to}`);
-                    this.setUByUid(from,to);
-                    from = to;
-                    to = this.selectNodeFromLineListByfrom(data.lineList,from);
-                }
-                // console.log("有信号发生器",)
-            },
+            
             //设置模型的U参数           !!!!!!!!!!!!!!!!传入什么呢 from to 一起 
             setUByUid(from,to){
                 // console.log("开始设置一个模型的参数",this.data.nodeList);
@@ -589,7 +579,8 @@
                 //点击了模型 计算各个的值
                 console.log("selectNode17uId",this.selectNode17uId(this.data.nodeList));
                 
-                this.calc(this.data,node);
+                //计算每个节点的数据
+                // this.calc(this.data,node);
                 if (node.name == 18 ) {
                         console.log("点击的是示波器,显示图像");
                         //检查是否已经
@@ -623,9 +614,172 @@
                 this.menu.left = evt.x + 'px'
                 this.menu.top = evt.y + 'px'
             },
+            //获取一个节点的某个属性的值 如：U0 U1 f R等 传入节点和要获取的属性值
+            getNodeDataarrItem(node,itemName){
+                let val = -1;
+                node.dataarr.forEach((item)=>{   //把信号发生器的值传给绘制曲线图的组件
+                    if(item.label===itemName){
+                        val = item.value;
+                    }else if(item.label===itemName){
+                        val = item.value;
+                    }else if(item.label===itemName){
+                        val = item.value;
+                    }
+                })
+                // console.log(`属性值${val}`)
+                return val;
+            },
+            //计算每个模型的输入输出 传入data和结束的节点
+            calc(data,node){
+                console.log("进入calc",data,node);
+                var node17 = this.selectNode17uId(data.nodeList); //返回信号发生器的id
+                console.log(node17)
+                if(node17== -1){ //没有信号发生器就退出 不计算
+                    this.$message("没有信号发生器");
+                    return false
+                }
+                if(node17.dataarr[0].value==null){
+                    this.$message.warning("请先设定信号发生器电压");
+                    return false
+                }
+                var from = node17.id;
+                var to = this.selectNodeFromLineListByfrom(data.lineList,from)
+                var tempechartdata =  JSON.parse(JSON.stringify(data.nodeList[this.selectIndexByUid(from)].echart)); //计算暂存数据 每次计算出的新数据放在这里
+                console.log("tempechartdata",tempechartdata[1])
+                while(to!=-1){ //根据连线顺序 遍历所有的模型的id 然后改变模型的U
+                    console.log(`${from}--->${to}`);
+                    // this.setUByUid(from,to);
+
+                    //通过不同to模型计算出新数据
+                    // tempechartdata = tempechartdata; 
+                    console.log("通过不同to模型计算出新数据模型信息",data.nodeList[this.selectIndexByUid(to)]);
+                    const tonode = data.nodeList[this.selectIndexByUid(to)]
+                    if(tonode.name == "11"){
+                        console.log("使用模型一")
+                        if(!this.getNodeDataarrItem(tonode,"R1")){
+                            this.$message("请输入R1的值");
+                            return false;
+                        }
+                        if(!this.getNodeDataarrItem(tonode,"R2")){
+                            this.$message("请输入R2的值");
+                            return false;
+                        }
+                        tempechartdata = calcutil.modelA(tempechartdata,this.getNodeDataarrItem(tonode,"R1"),this.getNodeDataarrItem(tonode,"R2"))
+                    }else if(tonode.name == "12"){
+                        console.log("使用模型二")
+                        if(!this.getNodeDataarrItem(tonode,"R1")){
+                            this.$message("请输入R1的值");
+                            return false;
+                        }
+                        if(!this.getNodeDataarrItem(tonode,"C")){
+                            this.$message("请输入C的值");
+                            return false;
+                        }
+                        tempechartdata = calcutil.modelB(tempechartdata,this.getNodeDataarrItem(tonode,"R1"),this.getNodeDataarrItem(tonode,"C"))
+                    }else if(tonode.name == "13"){
+                        console.log("使用模型C")
+                        if(!this.getNodeDataarrItem(tonode,"R1")){
+                            this.$message("请输入R1的值");
+                            return false;
+                        }if(!this.getNodeDataarrItem(tonode,"R2")){
+                            this.$message("请输入R2的值");
+                            return false;
+                        }if(!this.getNodeDataarrItem(tonode,"R3")){
+                            this.$message("请输入R3的值");
+                            return false;
+                        }
+                        if(!this.getNodeDataarrItem(tonode,"C")){
+                            this.$message("请输入C的值");
+                            return false;
+                        }
+                        tempechartdata = calcutil.modelC(tempechartdata,this.getNodeDataarrItem(tonode,"R1"),this.getNodeDataarrItem(tonode,"R2"),this.getNodeDataarrItem(tonode,"R3"),this.getNodeDataarrItem(tonode,"C"))
+                    }else if(tonode.name == "14"){
+                        console.log("使用模型D")
+                        if(!this.getNodeDataarrItem(tonode,"R1")){
+                            this.$message("请输入R1的值");
+                            return false;
+                        }if(!this.getNodeDataarrItem(tonode,"R2")){
+                            this.$message("请输入R2的值");
+                            return false;
+                        }
+                        if(!this.getNodeDataarrItem(tonode,"C")){
+                            this.$message("请输入C的值");
+                            return false;
+                        }
+                        tempechartdata = calcutil.modelD(tempechartdata,this.getNodeDataarrItem(tonode,"R1"),this.getNodeDataarrItem(tonode,"R2"),this.getNodeDataarrItem(tonode,"C"))
+                    }else if(tonode.name == "15"){
+                        console.log("使用模型E")
+                        if(!this.getNodeDataarrItem(tonode,"R1")){
+                            this.$message("请输入R1的值");
+                            return false;
+                        }if(!this.getNodeDataarrItem(tonode,"R2")){
+                            this.$message("请输入R2的值");
+                            return false;
+                        }
+                        if(!this.getNodeDataarrItem(tonode,"C1")){
+                            this.$message("请输入C1的值");
+                            return false;
+                        }
+                        if(!this.getNodeDataarrItem(tonode,"C2")){
+                            this.$message("请输入C2的值");
+                            return false;
+                        }
+                        tempechartdata = calcutil.modelE(tempechartdata,this.getNodeDataarrItem(tonode,"R1"),this.getNodeDataarrItem(tonode,"R2"),this.getNodeDataarrItem(tonode,"C1"),this.getNodeDataarrItem(tonode,"C2"))
+                    }else if(tonode.name == "16"){
+                        console.log("使用模型F")
+                        if(!this.getNodeDataarrItem(tonode,"R1")){
+                            this.$message("请输入R1的值");
+                            return false;
+                        }if(!this.getNodeDataarrItem(tonode,"R2")){
+                            this.$message("请输入R2的值");
+                            return false;
+                        }
+                        
+                        if(!this.getNodeDataarrItem(tonode,"C")){
+                            this.$message("请输入C2的值");
+                            return false;
+                        }
+                        tempechartdata = calcutil.modelF(tempechartdata,this.getNodeDataarrItem(tonode,"R1"),this.getNodeDataarrItem(tonode,"R2"),this.getNodeDataarrItem(tonode,"C"))
+                    }
+                    if(to === node.id){
+                        return tempechartdata;
+                    }
+                    from = to;
+                    to = this.selectNodeFromLineListByfrom(data.lineList,from);
+                }
+                // console.log("有信号发生器",)
+            },
+
+            //保存后计算图表中显示的数据，并重绘电路图
             repaintEverything() {
+                console.log("保存后计算画图数据",this.activeElement);
                 this.jsPlumb.repaint();
                 this.$message.success('保存成功');
+            },
+            //显示图像 给右边编辑参数的node_form调用 同时计算出图表的数据
+            panelChangedialogVisible(){
+                /** 获得了当前保存数据的节点 
+                 *  接下来需要计算图表的数据并赋值给tempechartdata
+                 * */
+                console.log(this.data.nodeList[this.selectIndexByUid(this.activeElement.nodeId)])
+                const currentNode = this.data.nodeList[this.selectIndexByUid(this.activeElement.nodeId)];
+
+                //当这个节点为信号发生器
+                if(currentNode.name==='17'){
+                    console.log("设置的是信号发生器的参数");
+                    const U0 = this.getNodeDataarrItem(currentNode,"U0");
+                    const f = this.getNodeDataarrItem(currentNode,"f")
+                    this.tempechartdata = calcutil.getSinData(U0,f) //把获得的数据赋值给图表
+                    //将信号发生器的数据保存在节点中 结算其他节点的时候要用
+                    this.data.nodeList[this.selectIndexByUid(this.activeElement.nodeId)].echart = this.tempechartdata;
+                }else{
+                    //当这个节点为其他节点 需要根据模型计算
+                    this.tempechartdata = this.calc(this.data,currentNode);
+                    
+                }
+                if(this.tempechartdata!=false){
+                    setTimeout(()=>{this.$refs.echart17.changedialogVisible();},500)
+                }
             },
             // 流程数据信息
             dataInfo() {
@@ -719,26 +873,28 @@
                 })
             },
             //显示信号发生器的电压随时间变化的折线图
-            show17chart(){
+            showchart(){
                 var node17 = this.selectNode17uId(this.data.nodeList);
                 if(node17==-1) {
                     this.$message.error('请选择信号发生器元件！')
                     return;
                 }
                 console.log("信号发生器",node17);
-                node17.dataarr.forEach((item)=>{   //把信号发生器的值传给绘制曲线图的组件
-                    if(item.label==="U0"){
-                        this.node17data.U0=item.value
-                    }else if(item.label==="f"){
-                        this.node17data.f=item.value
-                    }else if(item.label==="信号"){
-                        this.node17data.信号=item.value
-                    }
-                })
+                console.log(this.tempechartdata)
+                // node17.dataarr.forEach((item)=>{   //把信号发生器的值传给绘制曲线图的组件
+                //     if(item.label==="U0"){
+                //         this.chartdata.U0=item.value
+                //     }else if(item.label==="f"){
+                //         this.chartdata.f=item.value
+                //     }else if(item.label==="信号"){
+                //         this.chartdata.信号=item.value
+                //     }
+                // })
                 // this.$refs.echart17.changedialogVisible();
                 this.$refs.echart17.changedialogVisible();
-                // this.node17data = node17;
-            }
+                // this.chartdata = node17;
+            },
+            
         }
     }
 </script>

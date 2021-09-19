@@ -1,44 +1,77 @@
 <template>
 <el-dialog
-  title="信号发生器"
   :visible.sync="dialogVisible"
   width="80%"
   >
-    <ve-line :data="chartData" :settings="chartSettings"></ve-line>
+  <p slot="title">
+    模型{{echarttitle?echarttitle.name:""}}
+
+    <excel-download
+        style="float:right;margin-top:10px"
+        type="success"
+        :excelParam="excelParam"
+        :data="tempechartdata"
+        title="请输入文件名"
+    ></excel-download>
+  </p>
+  <!-- {{echartData[0]}} -->
+  
+     
+    <ve-line :data="echartData"  :settings="chartSettings" :title="title" :legend-visible="false" :yAxis="yAxis" ></ve-line>
   <span slot="footer" class="dialog-footer">
     <el-button @click="dialogVisible = false">取 消</el-button>
     <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
   </span>
 </el-dialog>
-
 </template>
 <script>
 export default {
-  // props:["echartData"],
+  props:["tempechartdata","echarttitle"],
   data () {
+    this.title = {
+      // text: "Main Title",
+      // subtext: "Sub Title",
+      // left: "center",
+      // top: "top",
+    }
+    this.yAxis = {
+      name:"电压"
+    }
+    
     this.chartSettings = {
       xAxisType: "value",//横轴的数据类型
-      yAxisType: "value", //左右坐标轴数据类型
+      xAxisName: "时间",
+      // yAxisName: "电压",
     }
     return {
-      
       dialogVisible:false,
-      chartData: {
+      echartData: {
         columns: ['时间', '电压'],
-        rows: [ ],
+        rows: [],
       },
       iteration:200, //把一个周期分割成这么多小块
       // maxU:5, //电压的最大值 峰值
       // timeT:Math.PI*3, //周期
 
+      excelParam:{ //导出excel的head
+          head: [
+          "时间",
+          "电压",
+          ],
+          filter: [
+          "时间",
+          "电压",
+          ]
+      },
     }
   },
  
   created(){
-    console.log(Math.sin(Math.PI).toFixed(2));
+    // console.log(Math.sin(Math.PI).toFixed(2));
     // this.initechart();
   },
   methods: {
+    
     // initechart(){
     //   this.chartData.rows = [];
     //   const iteration = this.iteration;
@@ -53,12 +86,12 @@ export default {
     //   }
     //   console.log(this.chartData.rows[0])
     // },
-    changedialogVisible(echartData){
+    changedialogVisible(){
       this.dialogVisible = !this.dialogVisible;
       if(this.dialogVisible){
-        console.log("重绘表格",echartData)
+        // console.log("重绘表格",this.tempechartdata)
         // this.initechart(); //
-        this.chartData.rows = echartData
+        this.echartData.rows = this.tempechartdata
       }
     }
   },

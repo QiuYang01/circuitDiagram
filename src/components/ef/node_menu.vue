@@ -8,7 +8,7 @@
                 <draggable @end="end" @start="move" v-model="menu.children" :options="draggableOptions">
                     <li v-for="subMenu in menu.children" class="ef-node-menu-li" :key="subMenu.id" :type="subMenu.type">
                         <!-- <i :class="subMenu.ico"></i>  -->
-                        <img :src="subMenu.imgUrl" width="100%" alt="" />{{subMenu.name}}
+                        <img :src="subMenu.imgUrl" width="100%" alt="" />模型{{subMenu.name}}
                         <!-- <modelA v-show="subMenu.model=='a'"></modelA>
                         <modelB v-show="subMenu.model=='b'"></modelB> -->
                     </li>
@@ -59,6 +59,7 @@ export default {
                     open: true,
                     children: [
                         {
+                            echart:[], //结果图像显示
                             id: '17', //信号发生器
                             type: 'timer17',
                             name: '17',
@@ -114,6 +115,7 @@ export default {
                             
                         }, 
                         {
+                            echart:[], //结果图像显示
                             id: '18', //示波器
                             type: 'timer18',
                             name: '18',
@@ -148,8 +150,8 @@ export default {
                     ico: 'el-icon-video-play',
                     open: true,
                     children: [
-                        
                         {
+                            echart:[], //结果图像显示
                             id: '11', //模型A
                             type: 'timer11',
                             name: '11',
@@ -206,6 +208,7 @@ export default {
                             
                         },  
                         {
+                            echart:[], //结果图像显示
                             id: '12', //模型B
                             type: 'task',
                             name: '12',
@@ -261,6 +264,7 @@ export default {
                             ],
                         },
                         {
+                            echart:[], //结果图像显示
                             id: '13', //模型C
                             type: 'task13',
                             name: '13',
@@ -334,6 +338,7 @@ export default {
                             ],
                         },
                         {
+                            echart:[], //结果图像显示
                             id: '14', //模型D
                             type: 'timer14',
                             name: '14',
@@ -398,6 +403,7 @@ export default {
                             
                         }, 
                         {
+                            echart:[], //结果图像显示
                             id: '15', //模型D
                             type: 'timer15',
                             name: '15',
@@ -471,6 +477,7 @@ export default {
                             
                         }, 
                         {
+                            echart:[], //结果图像显示
                             id: '16', //模型F
                             type: 'timer',
                             name: '16',

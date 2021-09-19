@@ -11,9 +11,9 @@
         :class="nodeContainerClass"
     >
         <!-- 拖拽点 -->
-        <!-- <div v-for="(dragdot,index) in node.dragdotlen" :key="dragdot" class="ef-node-left-ico flow-node-drag dragdotposition" :style="node.style[index]"> -->
-        <div ref="dot" v-for="(dragdot,index) in node.dragdotlen" :key="dragdot" class="ef-node-left-ico flow-node-drag dragdotposition" :style="node.style[index]">
-            <div   :class="nodeIcoClass" ></div>
+        <!-- inout==0表示U0,inout==1表示U1  <div v-for="(dragdot,index) in node.dragdotlen" :key="dragdot" class="ef-node-left-ico flow-node-drag dragdotposition" :style="node.style[index]"> -->
+        <div ref="dot" :inout="index" v-for="(dragdot,index) in node.dragdotlen" :key="dragdot" class="ef-node-left-ico flow-node-drag dragdotposition" :style="node.style[index]">
+            <div   :class="nodeIcoClass" >{{index}}</div>
         </div> 
         <!-- 数据标注 -->
         <p v-for="(data,index) in node.dataarr" :key="index+100"  :style="data.style" class="datalabel">
@@ -30,7 +30,7 @@
         <button style="padding:0;">
         <div :show-overflow-tooltip="true" style="width:150px">
             <img :src="node.imgUrl" width="100%" height="100%" alt="">
-             <!-- {{node.id}} -->
+             模型{{node.name}}
         </div>
         </button>
         </el-tooltip>

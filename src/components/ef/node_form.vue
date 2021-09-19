@@ -8,14 +8,14 @@
                 {{node.name}}<hr />
                 <el-form :model="node" ref="dataForm" label-width="80px" v-show="type === 'node'">
                     <el-form-item v-for="(data,index) in node.dataarr" :key="index" :label="data.label" >
-                        <el-select v-model="data.value" placeholder="请选择" v-if="data.label=='信号'"> 
+                        <el-select @change="unlocksavebtn" v-model="data.value" placeholder="请选择" v-if="data.label=='信号'"> 
                             <el-option  v-for="option in data.options" :key="option.value" :label="option.label" :value="option.value"> </el-option>
                         </el-select>
-                        <el-input v-else v-model="data.value" style="width:100px" :disabled="(data.label=='U0'&&data.edit!=true) || (data.label=='U1')"></el-input>
+                        <el-input @change="unlocksavebtn" v-else v-model="data.value" style="width:100px" :disabled="(data.label=='U0'&&data.edit!=true) || (data.label=='U1')"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button icon="el-icon-close">重置</el-button>
-                        <el-button type="primary" icon="el-icon-check" @click="save">保存</el-button>
+                        <el-button :disabled="!savebtnDisable" icon="el-icon-close" @click="showechart">显示图像</el-button>
+                        <el-button :disabled="savebtnDisable" type="primary" icon="el-icon-check" @click="save">保存</el-button>
                     </el-form-item>
                 </el-form>
 
@@ -32,22 +32,20 @@
            
         </div>
     </div>
-
 </template>
 
 <script>
     import { cloneDeep } from 'lodash'
-
     export default {
         data() {
             return {
+                savebtnDisable:false,
                 visible: true,
                 // node 或 line
                 type: 'node',
                 node: {},
                 line: {},
                 data: {},
-                
             }
         },
         methods: {
@@ -73,7 +71,11 @@
             saveLine() {
                 this.$emit('setLineLabel', this.line.from, this.line.to, this.line.label)
             },
-            save() {
+            unlocksavebtn(){
+                this.savebtnDisable = false;
+            },
+            save(){
+                this.savebtnDisable = true; 
                 this.data.nodeList.filter((node) => {
                     if (node.id === this.node.id) {
                         node.name = this.node.name
@@ -85,6 +87,9 @@
                         this.$emit('repaintEverything')
                     }
                 })
+            },
+            showechart(){
+                this.$parent.panelChangedialogVisible()
             }
         }
     }
