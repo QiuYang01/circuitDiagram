@@ -2,16 +2,17 @@
 <el-dialog
   :visible.sync="dialogVisible"
   width="80%"
+  top="10vh"
   >
   <p slot="title">
     模型{{echarttitle?echarttitle.name:""}}
-
+    
     <excel-download
         style="float:right;margin-top:10px"
         type="success"
         :excelParam="excelParam"
         :data="tempechartdata"
-        title="请输入文件名"
+        :title="echarttitle?`模型${echarttitle.name}的数据`:'请输入文件名'"
     ></excel-download>
   </p>
   <!-- {{echartData[0]}} -->
@@ -19,8 +20,8 @@
      
     <ve-line :data="echartData"  :settings="chartSettings" :title="title" :legend-visible="false" :yAxis="yAxis" ></ve-line>
   <span slot="footer" class="dialog-footer">
-    <el-button @click="dialogVisible = false">取 消</el-button>
-    <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+    <!-- <el-button @click="dialogVisible = false"></el-button> -->
+    <el-button type="primary" @click="dialogVisible = false">关 闭</el-button>
   </span>
 </el-dialog>
 </template>
@@ -40,7 +41,7 @@ export default {
     
     this.chartSettings = {
       xAxisType: "value",//横轴的数据类型
-      xAxisName: "时间",
+      // xAxisName: "时间",
       // yAxisName: "电压",
     }
     return {

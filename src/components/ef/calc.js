@@ -17,6 +17,59 @@ function getSinData(U0,f){
   }
   return chartData
 }
+
+//获取锯齿波的初始数据
+function getjvchiData(U0,f){
+  var timeT = 1/f; //周期
+  const iteration = parseInt(timeT/dt); //迭代次数
+  var chartData = []; //数据
+  for(let i=0; i<iteration; i++){ //斜线
+    let row = {'时间': '', '电压': ''};
+    row.时间 = i/iteration*timeT;
+    row.电压 = U0/iteration*i;
+    chartData.push(row)
+  }
+  for(let i=1; i<=iteration; i++){ //垂线
+    let row = {'时间': '', '电压': ''};
+    row.时间 = timeT;
+    row.电压 = U0/iteration*(iteration-i);
+    chartData.push(row)
+  }
+  return chartData
+}
+
+//获取方波初始数据
+function getfangboData(U0,f){
+  var timeT = 1/f; //周期
+  const iteration = parseInt(timeT/dt); //迭代次数
+  var chartData = []; //数据
+  for(let i=0; i<iteration/2; i++){ //低的水平线
+    let row = {'时间': '', '电压': ''};
+    row.时间 = i/iteration*timeT;
+    row.电压 = 0;
+    chartData.push(row)
+  }
+  for(let i=0; i<iteration/2; i++){ //垂直线
+    let row = {'时间': '', '电压': ''};
+    row.时间 = timeT/2;
+    row.电压 = U0/iteration*i*2;
+    chartData.push(row)
+  }
+  for(let i=iteration/2+1; i<iteration; i++){ //搞的水平线
+    let row = {'时间': '', '电压': ''};
+    row.时间 = timeT;
+    row.电压 = U0;
+    chartData.push(row)
+  }
+  for(let i=0; i<iteration/2; i++){ //垂直线
+    let row = {'时间': '', '电压': ''};
+    row.时间 = timeT;
+    row.电压 = U0/iteration*(iteration/2-i)*2;
+    chartData.push(row)
+  }
+  return chartData
+}
+
 //模型A
 function modelA(U1,R1,R2){
   // console.log("modelA---",U1,R1,R2)
@@ -147,6 +200,8 @@ function modelF(U1,R1,R2,C){
 }
 export default {
   getSinData,
+  getjvchiData,
+  getfangboData,
   modelA,
   modelB,
   modelC,

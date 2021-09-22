@@ -75,6 +75,7 @@
                 this.savebtnDisable = false;
             },
             save(){
+                
                 this.savebtnDisable = true; 
                 this.data.nodeList.filter((node) => {
                     if (node.id === this.node.id) {

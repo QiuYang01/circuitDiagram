@@ -1,5 +1,10 @@
 <template>
-    <div v-if="easyFlowVisible" style="height: calc(100vh);">
+    <div v-if="easyFlowVisible" style="height: calc(100vh);"
+        v-loading="loading"
+        element-loading-text="数据生成中"
+        element-loading-spinner="el-icon-loading"
+        element-loading-background="rgba(0, 0, 0, 0.8)"
+    >
         <el-row>
             <!--顶部工具菜单-->
             <el-col :span="24">
@@ -13,7 +18,7 @@
                     <el-button type="text" icon="el-icon-plus" size="large" @click="zoomAdd"></el-button>
                     <el-divider direction="vertical"></el-divider>
                     <el-button type="text" icon="el-icon-minus" size="large" @click="zoomSub"></el-button> -->
-                    <el-button @click="showchart()">测试查看信号发生器</el-button>
+                    <!-- <el-button @click="showchart()">测试查看信号发生器</el-button> -->
                 </div>
             </el-col>
         </el-row>
@@ -107,6 +112,8 @@
                 zoom: 0.5,
                 anchorsStart:[],
                 anchorsEnd:[],
+
+                loading:false,
             }
         },
         // 一些基础配置移动该文件中
@@ -447,7 +454,7 @@
                     for (var i = 0; i < this.data.nodeList.length; i++) {
                         let node = this.data.nodeList[i]
                         if (node.name === nodeName) {
-                            nodeName = origName + index
+                            nodeName = origName +'-'+ index
                             repeat = true
                         }
                     }
@@ -577,8 +584,8 @@
             clickNode(node) {
                 var nodeId = node.id;
                 //点击了模型 计算各个的值
-                console.log("selectNode17uId",this.selectNode17uId(this.data.nodeList));
-                
+                // console.log("selectNode17uId",this.selectNode17uId(this.data.nodeList));
+                console.log(this.data.nodeList[this.selectIndexByUid(nodeId)])
                 //计算每个节点的数据
                 // this.calc(this.data,node);
                 if (node.name == 18 ) {
@@ -590,6 +597,7 @@
                 //         console.log("点击的是示波器,显示图像");
                 //     }
                 // })
+                
                 this.activeElement.type = 'node'
                 this.activeElement.nodeId = nodeId
                 this.$refs.nodeForm.nodeInit(this.data, nodeId)
@@ -754,7 +762,14 @@
             repaintEverything() {
                 console.log("保存后计算画图数据",this.activeElement);
                 this.jsPlumb.repaint();
-                this.$message.success('保存成功');
+                // console.log(this.data.nodeList[this.selectIndexByUid(this.activeElement.nodeId)])
+                
+                if(this.data.nodeList[this.selectIndexByUid(this.activeElement.nodeId)].name=="17"){
+                    this.$message.success('保存成功,请点击显示 图像按钮 。');
+                }else{
+                    this.$message.success('保存成功');
+                }
+                
             },
             //显示图像 给右边编辑参数的node_form调用 同时计算出图表的数据
             panelChangedialogVisible(){
@@ -763,13 +778,26 @@
                  * */
                 console.log(this.data.nodeList[this.selectIndexByUid(this.activeElement.nodeId)])
                 const currentNode = this.data.nodeList[this.selectIndexByUid(this.activeElement.nodeId)];
-
+                this.loading = true;
                 //当这个节点为信号发生器
                 if(currentNode.name==='17'){
                     console.log("设置的是信号发生器的参数");
                     const U0 = this.getNodeDataarrItem(currentNode,"U0");
-                    const f = this.getNodeDataarrItem(currentNode,"f")
-                    this.tempechartdata = calcutil.getSinData(U0,f) //把获得的数据赋值给图表
+                    const f = this.getNodeDataarrItem(currentNode,"f");
+
+                    console.log("选择不同波形初始化数据",this.getNodeDataarrItem(currentNode,"信号"))
+                    if(this.getNodeDataarrItem(currentNode,"信号")=="正弦波"){
+                        this.tempechartdata = calcutil.getSinData(U0,f) //把获得的数据赋值给图表
+                    }else if(this.getNodeDataarrItem(currentNode,"信号")=="锯齿波"){
+                        this.tempechartdata = calcutil.getjvchiData(U0,f) //把获得的数据赋值给图表
+                    }else if(this.getNodeDataarrItem(currentNode,"信号")=="方波"){
+                        this.tempechartdata = calcutil.getfangboData(U0,f) //把获得的数据赋值给图表
+                    }else {
+                        alert("模型数据生成失败")
+                        this.loading = false;
+                        return 
+                    }
+                    
                     //将信号发生器的数据保存在节点中 结算其他节点的时候要用
                     this.data.nodeList[this.selectIndexByUid(this.activeElement.nodeId)].echart = this.tempechartdata;
                 }else{
@@ -778,8 +806,9 @@
                     
                 }
                 if(this.tempechartdata!=false){
-                    setTimeout(()=>{this.$refs.echart17.changedialogVisible();},500)
+                    setTimeout(()=>{this.$refs.echart17.changedialogVisible();this.loading = false;},500)
                 }
+                this.loading = false;
             },
             // 流程数据信息
             dataInfo() {

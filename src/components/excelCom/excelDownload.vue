@@ -38,7 +38,7 @@ export default {
         },
         // 数据
         data:{
-            type:Array,
+            // type:Array,
             required:true
         },
         title:{
