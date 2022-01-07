@@ -8,7 +8,7 @@
     模型{{echarttitle?echarttitle.name:""}}
     
     <excel-download
-        style="float:right;margin-top:10px"
+        style="float:right;margin-top:20px"
         type="success"
         :excelParam="excelParam"
         :data="tempechartdata"

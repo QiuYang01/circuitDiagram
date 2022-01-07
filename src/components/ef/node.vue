@@ -129,6 +129,7 @@ import modelA from '../models/modelA'
 }
 .datalabel {
     font-weight: 700;
+    
 }
 </style>
 

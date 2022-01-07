@@ -1,6 +1,6 @@
 /**计算有关的函数 计算数据用于画图 */
 
-const dt = 0.005;
+const dt = 0.001;
 
 
 //获取正弦波的初始数据
@@ -38,33 +38,66 @@ function getjvchiData(U0,f){
   return chartData
 }
 
+// //获取方波初始数据
+// function getfangboData(U0,f){
+//   var timeT = 1/f; //周期
+//   const iteration = parseInt(timeT/dt); //迭代次数
+//   var chartData = []; //数据
+//   for(let i=0; i<iteration/2; i++){ //低的水平线
+//     let row = {'时间': '', '电压': ''};
+//     row.时间 = i/iteration*timeT;
+//     row.电压 = 0;
+//     chartData.push(row)
+//   }
+//   for(let i=0; i<iteration/2; i++){ //垂直线
+//     let row = {'时间': '', '电压': ''};
+//     row.时间 = timeT/2;
+//     row.电压 = U0/iteration*i*2;
+//     chartData.push(row)
+//   }
+//   for(let i=iteration/2+1; i<iteration; i++){ //搞的水平线
+//     let row = {'时间': '', '电压': ''};
+//     row.时间 = timeT;
+//     row.电压 = U0;
+//     chartData.push(row)
+//   }
+//   for(let i=0; i<iteration/2; i++){ //垂直线
+//     let row = {'时间': '', '电压': ''};
+//     row.时间 = timeT;
+//     row.电压 = U0/iteration*(iteration/2-i)*2;
+//     chartData.push(row)
+//   }
+//   return chartData
+// }
+
+
 //获取方波初始数据
-function getfangboData(U0,f){
+function getfangboData(U0,f){  // 4.5/10 1/10 4.5/10 1/10
   var timeT = 1/f; //周期
   const iteration = parseInt(timeT/dt); //迭代次数
   var chartData = []; //数据
-  for(let i=0; i<iteration/2; i++){ //低的水平线
+  for(let i=0; i<iteration*4.5/10; i++){ //低的水平线
     let row = {'时间': '', '电压': ''};
     row.时间 = i/iteration*timeT;
     row.电压 = 0;
     chartData.push(row)
   }
-  for(let i=0; i<iteration/2; i++){ //垂直线
+  for(let i=0; i<iteration*0.5/10; i++){ //垂直线
     let row = {'时间': '', '电压': ''};
-    row.时间 = timeT/2;
-    row.电压 = U0/iteration*i*2;
+    row.时间 = i/iteration*timeT + 4.5/10*timeT;
+    row.电压 = U0/(iteration*0.5/10)*i;
     chartData.push(row)
   }
-  for(let i=iteration/2+1; i<iteration; i++){ //搞的水平线
+  for(let i=0; i<iteration*4.5/10; i++){ //搞的水平线
     let row = {'时间': '', '电压': ''};
-    row.时间 = timeT;
+    row.时间 = i/iteration*timeT + (5/10)*timeT;
     row.电压 = U0;
     chartData.push(row)
   }
-  for(let i=0; i<iteration/2; i++){ //垂直线
+  for(let i=0; i<iteration*0.5/10; i++){ //垂直线
     let row = {'时间': '', '电压': ''};
-    row.时间 = timeT;
-    row.电压 = U0/iteration*(iteration/2-i)*2;
+    row.时间 = i/iteration*timeT + 9.5/10*timeT;
+    row.电压 = U0 - U0/(iteration*0.5/10)*(i);
     chartData.push(row)
   }
   return chartData
@@ -80,7 +113,7 @@ function modelA(U1,R1,R2){
   }
   for(let i=0; i<U1.length; i++){
     temp = U1[i];
-    temp.电压 = -(R2/R1)*temp.电压
+    temp.电压 = (R2/R1)*temp.电压
     U0.push(temp)
   }
   console.log("模型A得到的数据",U0)
@@ -152,10 +185,39 @@ function modelD(U1,R1,R2,C){
   return U0;
 }
 
+// //模型E
+// function modelE(U1,R1,R2,C1,C2){
+//   let templow  = {};
+//   var U0 = [
+//     {
+//       "时间": 0,
+//       "电压": 0
+//     }
+//   ];
+//   let temp={
+//     "时间": 0,
+//     "电压": 0
+//   }
+//   for(let i=1; i<U1.length; i++){
+//     templow = U1[i-1];
+//     temp = JSON.parse(JSON.stringify(U1[i]));
+//     temp.电压 =U0[i-1].电压 +  ((-1/R1*C2)*( temp.电压 + (R1*C1 + R2*C2)*((temp.电压-templow.电压)/dt) + (R1*C1*R2*C2)*((temp.电压-templow.电压)/dt/dt)))*dt;
+//     // console.log(temp.电压)
+//     U0.push(temp)
+//   }
+//   console.log("模型E得到的数据",U0)
+//   return U0;
+// }
+
 //模型E
 function modelE(U1,R1,R2,C1,C2){
   let templow  = {};
+  let templowlow  = {};
   var U0 = [
+    {
+      "时间": 0,
+      "电压": 0
+    },
     {
       "时间": 0,
       "电压": 0
@@ -165,10 +227,11 @@ function modelE(U1,R1,R2,C1,C2){
     "时间": 0,
     "电压": 0
   }
-  for(let i=1; i<U1.length; i++){
+  for(let i=2; i<U1.length; i++){
+    templowlow =   U1[i-2];
     templow = U1[i-1];
     temp = JSON.parse(JSON.stringify(U1[i]));
-    temp.电压 =U0[i-1].电压 +  ((-1/R1*C2)*( temp.电压 + (R1*C1 + R2*C2)*((temp.电压-templow.电压)/dt) + (R1*C1*R2*C2)*((temp.电压-templow.电压)/dt/dt)))*dt;
+    temp.电压 =U0[i-1].电压 +  ((-1/R1*C2)*( temp.电压 + (R1*C1 + R2*C2)*((temp.电压-templow.电压)/dt) + (R1*C1*R2*C2)*(((temp.电压-templow.电压)/dt-(templow.电压-templowlow.电压)/dt)/dt)  ))*dt;
     // console.log(temp.电压)
     U0.push(temp)
   }
