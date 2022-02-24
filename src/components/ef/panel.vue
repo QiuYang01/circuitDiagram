@@ -9,7 +9,7 @@
             <!--顶部工具菜单-->
             <el-col :span="24">
                 <div class="ef-tooltar">
-                    <el-link type="primary" :underline="false">物理画图</el-link>
+                    <el-link type="primary" :underline="false">虚拟实验</el-link>
                     <el-divider direction="vertical"></el-divider>
                     <el-button type="text" icon="el-icon-delete" size="large" @click="deleteElement" :disabled="!this.activeElement.type"></el-button>
                     <!-- <el-divider direction="vertical"></el-divider>
@@ -19,6 +19,7 @@
                     <el-divider direction="vertical"></el-divider>
                     <el-button type="text" icon="el-icon-minus" size="large" @click="zoomSub"></el-button> -->
                     <!-- <el-button @click="showchart()">测试查看信号发生器</el-button> -->
+                    <span style="float:right">修改<b>信号发生器</b>的信号后，立即点击<b>显示图像</b>按钮才会生成数据</span>
                 </div>
             </el-col>
         </el-row>
@@ -797,7 +798,6 @@
                         this.loading = false;
                         return 
                     }
-                    
                     //将信号发生器的数据保存在节点中 结算其他节点的时候要用
                     this.data.nodeList[this.selectIndexByUid(this.activeElement.nodeId)].echart = this.tempechartdata;
                 }else{
@@ -806,6 +806,16 @@
                     
                 }
                 if(this.tempechartdata!=false){
+                    // console.log("将数据多复制几个周期",this.tempechartdata);
+                    // let timeEnd = this.tempechartdata[[this.tempechartdata.length-1]].时间;
+                    // let length = this.tempechartdata.length
+                    // for(let i=0; i<length; i++){
+                    //     this.tempechartdata.push({
+                    //         '时间':timeEnd+this.tempechartdata[i].时间,
+                    //         '电压':this.tempechartdata[i].电压
+                    //     })
+                    // }
+                    // console.log(this.tempechartdata[[this.tempechartdata.length-1]])
                     setTimeout(()=>{this.$refs.echart17.changedialogVisible();this.loading = false;},500)
                 }
                 this.loading = false;

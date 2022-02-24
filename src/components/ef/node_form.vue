@@ -8,13 +8,13 @@
                 {{node.name}}<hr />
                 <el-form :model="node" ref="dataForm" label-width="80px" v-show="type === 'node'">
                     <el-form-item v-for="(data,index) in node.dataarr" :key="index" :label="data.label" >
-                        <el-select @change="unlocksavebtn" v-model="data.value" placeholder="请选择" v-if="data.label=='信号'"> 
+                        <el-select @change="unlocksavebtn('selectchange')" v-model="data.value" placeholder="请选择" v-if="data.label=='信号'"> 
                             <el-option  v-for="option in data.options" :key="option.value" :label="option.label" :value="option.value"> </el-option>
                         </el-select>
-                        <el-input @change="unlocksavebtn" v-else v-model="data.value" style="width:100px" :disabled="(data.label=='U0'&&data.edit!=true) || (data.label=='U1')"></el-input>
+                        <el-input @input="unlocksavebtn" v-else v-model="data.value" style="width:100px" :disabled="(data.label=='U0'&&data.edit!=true) || (data.label=='U1')"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button :disabled="!savebtnDisable" icon="el-icon-close" @click="showechart">显示图像</el-button>
+                        <el-button :disabled="!savebtnDisable"  @click="showechart">显示图像</el-button>
                         <el-button :disabled="savebtnDisable" type="primary" icon="el-icon-check" @click="save">保存</el-button>
                     </el-form-item>
                 </el-form>
@@ -71,8 +71,11 @@
             saveLine() {
                 this.$emit('setLineLabel', this.line.from, this.line.to, this.line.label)
             },
-            unlocksavebtn(){
+            unlocksavebtn(item){
                 this.savebtnDisable = false;
+                // if(item==='selectchange'){
+                //     this.showechart();
+                // }
             },
             save(){
                 

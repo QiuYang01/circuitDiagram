@@ -8,7 +8,16 @@
                 <draggable @end="end" @start="move" v-model="menu.children" :options="draggableOptions">
                     <li v-for="subMenu in menu.children" class="ef-node-menu-li" :key="subMenu.id" :type="subMenu.type">
                         <!-- <i :class="subMenu.ico"></i>  -->
-                        <img :src="subMenu.imgUrl" width="100%" alt="" />模型{{subMenu.name}}
+                        <div v-if="subMenu.name==17">
+                            <img :src="subMenu.imgUrl" width="100%" alt="" />信号发生器
+                        </div>
+                        <div v-if="subMenu.name==18">
+                            <img :src="subMenu.imgUrl" width="100%" alt="" />示波器
+                        </div>
+                         <div v-if="subMenu.name!=17&subMenu.name!=18">
+                            <img :src="subMenu.imgUrl" width="100%" alt="" />模型{{subMenu.name}}
+                        </div>
+                        
                         <!-- <modelA v-show="subMenu.model=='a'"></modelA>
                         <modelB v-show="subMenu.model=='b'"></modelB> -->
                     </li>

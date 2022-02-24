@@ -28,9 +28,27 @@
         </div>
         
         <button style="padding:0;">
+            <!-- <div v-if="subMenu.name==17">
+                            <img :src="subMenu.imgUrl" width="100%" alt="" />信号发生器
+                        </div>
+                        <div v-if="subMenu.name==18">
+                            <img :src="subMenu.imgUrl" width="100%" alt="" />示波器
+                        </div>
+                         <div v-if="subMenu.name!=17&subMenu.name!=18">
+                            <img :src="subMenu.imgUrl" width="100%" alt="" />模型{{subMenu.name}}
+                        </div> -->
         <div :show-overflow-tooltip="true" style="width:150px">
-            <img :src="node.imgUrl" width="100%" height="100%" alt="">
-             模型{{node.name}}
+            <div v-if="node.name==17">
+                <img :src="node.imgUrl" width="100%" alt="" />信号发生器
+            </div>
+            <div v-if="node.name==18">
+                <img :src="node.imgUrl" width="100%" alt="" />示波器
+            </div>
+                <div v-if="node.name!=17&node.name!=18">
+                <img :src="node.imgUrl" width="100%" alt="" />模型{{node.name}}
+            </div>
+            <!-- <img :src="node.imgUrl" width="100%" height="100%" alt="">
+             模型··{{node.name}} -->
         </div>
         </button>
         </el-tooltip>
