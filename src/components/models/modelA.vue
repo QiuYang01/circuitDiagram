@@ -1,6 +1,5 @@
 <template>
   <div>
-		
     <canvas :id="htmlElementId" > </canvas>
     <!-- <div id="aa" style="border:1px solid #ccc;">111</div> -->
   </div>
@@ -21,7 +20,6 @@ export default {
   },
   mounted(){
 		this.htmlElementId = 'a'+(new Date()).getTime();
-   
 		setTimeout(()=>{this.init(),1500})
   },
 	methods: {
