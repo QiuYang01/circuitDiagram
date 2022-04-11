@@ -213,7 +213,6 @@
                             label: conn.getLabel()
                         })
                     })
-
                     // 连线
                     this.jsPlumb.bind("connection", (evt) => {
                         // console.log("连线",evt.sourceEndpoint)
@@ -246,15 +245,12 @@
                             console.log("连线无效")
                             return
                         }
-
-                        
                         // console.log("结束点的位置",window.event,evt) //.style.left.split('px')[0]
                         //https://blog.csdn.net/zeping891103/article/details/72627855
                         // console.log(window.event.toElement.nodeName)
                         // alert(window.event.clientY-42)
                         // alert(document.getElementById(evt.targetId).offsetTop)
                         // console.log(document.getElementById(evt.targetId).offsetLeft)
-
                         this.anchorsEnd=[0,0,0,0,window.event.clientX-231-document.getElementById(evt.targetId).offsetLeft,
                         window.event.clientY-49-document.getElementById(evt.targetId).offsetTop];
                         let from = evt.sourceId;
@@ -658,7 +654,6 @@
                 while(to!=-1){ //根据连线顺序 遍历所有的模型的id 然后改变模型的U
                     console.log(`${from}--->${to}`);
                     // this.setUByUid(from,to);
-
                     //通过不同to模型计算出新数据
                     // tempechartdata = tempechartdata; 
                     console.log("通过不同to模型计算出新数据模型信息",data.nodeList[this.selectIndexByUid(to)]);

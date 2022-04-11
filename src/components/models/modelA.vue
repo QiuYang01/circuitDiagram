@@ -1,11 +1,9 @@
 <template>
   <div>
     <canvas :id="htmlElementId" > </canvas>
-    <!-- <div id="aa" style="border:1px solid #ccc;">111</div> -->
   </div>
 </template>
 <script>
-// import {jsPlumb} from 'jsplumb'
 export default {
   data() {
     return {
@@ -32,9 +30,9 @@ export default {
 			});
 
 			let initPositionX = 0, //画图的初始位置x，y 从模型整体高度的一半出发
-				initPositionY = canvasHeight/2;
+				  initPositionY = canvasHeight/2;
 			let RWidth = 30,	//电阻的宽度 后面以这个为标准
-				RHeight = 10;	//电阻高度
+				  RHeight = 10;	//电阻高度
 			var path = new fabric.Path(`M ${initPositionX} 					 ${initPositionY} //从模型整体高度的一半出发
 										L ${initPositionX+RWidth*1}  ${initPositionY} //画R1 向右到达开始画电阻的位置
 										L ${initPositionX+RWidth*1}  ${initPositionY+RHeight} //向下
@@ -66,7 +64,6 @@ export default {
 										L ${initPositionX+RWidth*4.8}  ${initPositionY-4*RHeight} //
 										M ${initPositionX+RWidth*5.3}  ${initPositionY-6*RHeight} //
 										L ${initPositionX+RWidth*5.3}  ${initPositionY-4*RHeight} //
-										
 										M ${initPositionX+RWidth*5.3}  ${initPositionY-5*RHeight} //移动到上边那个R2的右边
 										L ${initPositionX+RWidth*6.5}  ${initPositionY-5*RHeight} //向右
 										L ${initPositionX+RWidth*6.5}  ${initPositionY+4*RHeight} //向下

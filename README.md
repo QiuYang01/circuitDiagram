@@ -1,6 +1,5 @@
 # circuit_diagram
 
-> a Head work worth 1000 yuan
 
 ## Build Setup
 
